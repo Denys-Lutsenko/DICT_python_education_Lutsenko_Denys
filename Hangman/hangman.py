@@ -3,18 +3,11 @@ import re
 import string
 
 
-"""слов минимум 6
-de=len(x)
-exit()
-не прави буква
-повторы 
-не прав + повтор+несколько букв+ не символ а цифра 
-"""
 
 print("HANGMAN"  "\nThe game will be available soon.")
-words = ['python', 'bask', "java", "javascript", "php"]
+words = ['python', 'bask', "java", "javascript", "php", 'serendipity', 'petrichor',
+		"supine", "solitude ", "aurora", "idyllic", "clinomania ", "pluviophile"]
 the_word = random.choice(words)
-print("The word has", len(the_word), 'letters')
 right = ['-'] * len(the_word)
 wrong = []
 health = 8
@@ -25,14 +18,28 @@ alphabet = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
             'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
             'v', 'w', 'x', 'y', 'z'}
 
+
+
 def update():
     for i in right:
         print(i, end='')
     print()
-update()
-
 
 while True:
+    game = input('Type "play" to play the game, "exit" to quit:')
+    if game.lower() == "exit":
+            exit()
+    if game.lower() == "play":
+            print("The word has", len(the_word), 'letters')
+            break
+    else:
+        if game != 'play' and 'exit':
+            print()
+            continue
+
+while True:
+
+    update()
     print('health', health)
     conjec = input("conjecture a lettre: ")
     conjec = conjec.lower()
@@ -47,7 +54,8 @@ while True:
     if conjec == len(wrong):
         health += 1
 
-
+    if conjec.lower() == "exit":
+        exit()
     else:
 
         used_letters += conjec
@@ -74,7 +82,6 @@ while True:
             if health == 0:
                 print("You lost!")
                 break
-            #if len(wrong) > health:
             continue
         if '-' not in right:
             print("You survived!")
