@@ -1,4 +1,8 @@
 import random
+import re
+import string
+
+
 """слов минимум 6
 de=len(x)
 exit()
@@ -16,6 +20,10 @@ wrong = []
 health = 8
 len_word = len(the_word)
 used_letters = ""
+char = ()
+alphabet = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
+            'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
+            'v', 'w', 'x', 'y', 'z'}
 
 def update():
     for i in right:
@@ -27,10 +35,21 @@ update()
 while True:
     print('health', health)
     conjec = input("conjecture a lettre: ")
-    if conjec in used_letters or len(conjec) > 1:
-        print("No improvements")
-        health -= 1
+    conjec = conjec.lower()
+    # print(bool(alphabet.intersection(set(conjec.lower()))))
+    f = bool(alphabet.intersection(set(conjec.lower())))
+    if f == False:
+        print('Please enter a lowercase English letter.')
+    if conjec in used_letters:
+        print("You`ve already guessed this letter.")
+    if len(conjec) > 1:
+        print("You should input a single letter.")
+    if conjec == len(wrong):
+        health += 1
+
+
     else:
+
         used_letters += conjec
 
         if conjec in the_word:
@@ -43,10 +62,15 @@ while True:
         else:
             if conjec not in wrong:
                 wrong.append(conjec)
+
+                print("You`ve already guessed this letter.")
+
             else:
+                if conjec in wrong:
+                    wrong.append(conjec)
+                    health += 1
                 print(wrong)
             health -= 1
-            print("That letter doesn't appear in the word")
             if health == 0:
                 print("You lost!")
                 break
