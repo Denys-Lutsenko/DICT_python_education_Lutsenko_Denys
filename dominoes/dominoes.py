@@ -1,8 +1,9 @@
-'''dominoes 3-st'''
+'''dominoes 4-st'''
 
 import random
 
-# выбирает случайные n элементов из набора и удаляет их из начального набора
+
+# выбирает случайные n элементов из набора
 def get_domino_pieces(n):
     domino_pieces = []
     for _ in range(n):
@@ -50,13 +51,28 @@ def current_stage(stat):
 # делает один ход
 def make_a_move(m, pieces):
     if m > 0:
-        domino_snake.append(str(pieces[m - 1]))
-        del pieces[m - 1]
+        domino = pieces[m - 1]
+        right_snake = int(domino_snake[-1][4])
+        if domino.count(right_snake) > 0:
+            if right_snake == domino[1]:
+                domino = [domino[1], domino[0]]
+            domino_snake.append(str(domino))
+            del pieces[m - 1]
+        else:
+            return 'Illegal'
     if m < 0:
-        domino_snake.insert(0, str(pieces[-m - 1]))
-        del pieces[-m - 1]
+        domino = pieces[-m - 1]
+        left_snake = int(domino_snake[0][1])
+        if left_snake in domino:
+            if left_snake == domino[0]:
+                domino = [domino[1], domino[0]]
+            domino_snake.insert(0, str(domino))
+            del pieces[-m - 1]
+        else:
+            return 'Illegal'
     if m == 0:
-        pieces.extend(get_domino_pieces(1))
+        if domino_set:
+            pieces.extend(get_domino_pieces(1))
 
 
 # устанавливает первое домино
@@ -77,7 +93,7 @@ else:
     status = 'player'
 domino_snake.append(str(first_domino))
 
-# игроки делают ходы до конца игры
+# играют по очереди до конца игры
 while True:
     current_stage(status)
     if status in ['player_win', 'computer_win', 'draw']:
@@ -89,19 +105,25 @@ while True:
             except ValueError:
                 print('Invalid input. Please try again.')
                 continue
-            if int(move) <= len(player_pieces):
-                break
-            print('Invalid input. Please try again.')
-        make_a_move(int(move), player_pieces)
+            if int(move) not in range(-len(player_pieces), len(player_pieces) + 1):
+                print('Invalid input. Please try again.')
+                continue
+            if make_a_move(int(move), player_pieces) == 'Illegal':
+                print('Illegal move. Please try again.')
+                continue
+            break
         status = 'computer'
     elif status == 'computer':
         enter = input()
-        move = random.randint(-len(computer_pieces), len(computer_pieces))
-        make_a_move(move, computer_pieces)
+        while True:
+            move = random.randint(-len(computer_pieces), len(computer_pieces))
+            if make_a_move(move, computer_pieces) == 'Illegal':
+                continue
+            break
         status = 'player'
+    if domino_snake[0][1] == domino_snake[-1][4] and "".join(domino_snake).count(domino_snake[0][1]) == 8:
+        status = 'draw'
     if len(player_pieces) == 0:
         status = 'player_win'
     if len(computer_pieces) == 0:
         status = 'computer_win'
-    if domino_snake[0][1] == domino_snake[-1][4] and "".join(domino_snake).count(domino_snake[0][1]) == 8:
-        status = 'draw'
