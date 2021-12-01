@@ -1,11 +1,9 @@
-'''dominoes 1-st'''
+'''dominoes 2-st'''
 
 import random
 
-global domino_set
 
-
-# выбирается n случайных элементов из набора
+# выбирает случайные n элементов из набора и удаляет их из начального набора
 def get_domino_pieces(n):
     domino_pieces = []
     for i in range(n):
@@ -30,18 +28,33 @@ while True:
     domino_set = [[a, b] for a in range(7) for b in range(7) if a <= b]
     computer_pieces = get_domino_pieces(7)
     player_pieces = get_domino_pieces(7)
-    domino_snake = max(max_double(computer_pieces), max_double(player_pieces))
-    if domino_snake:
+    first_domino = max(max_double(computer_pieces), max_double(player_pieces))
+    if first_domino:
         break
 
-if domino_snake in player_pieces:
-    player_pieces.remove(domino_snake)
+
+# печатает сообщение о текущем статусе
+def message(st):
+    return {
+        'computer': '\nStatus: Computer is about to make a move. Press Enter to continue...',
+        'player': '\nStatus: It\'s your turn to make a move. Enter your command.'}[st]
+
+
+domino_snake = []
+if first_domino in player_pieces:
+    player_pieces.remove(first_domino)
     status = 'computer'
 else:
-    computer_pieces.remove(domino_snake)
+    computer_pieces.remove(first_domino)
     status = 'player'
-print('Stock pieces:', domino_set)
-print('Computer pieces:', computer_pieces)
-print('Player pieces:', player_pieces)
-print('Domino snake:', [domino_snake])
-print('Status:', status)
+domino_snake.extend(first_domino)
+
+print('=' * 70)
+print('Stock size:', len(domino_set))
+print('Computer pieces:', str(len(computer_pieces))+'\n')
+print(str(domino_snake)+'\n')
+print('Your pieces:')
+for i in range(len(player_pieces)):
+    print(str(i + 1) + ':' + str(player_pieces[i]))
+print(message(status))
+
