@@ -1,4 +1,4 @@
-'''dominoes 4-st'''
+'''dominoes 5-st'''
 
 import random
 
@@ -46,6 +46,22 @@ def current_stage(stat):
     for i in range(len(player_pieces)):
         print(str(i + 1) + ':' + str(player_pieces[i]))
     print(message(stat))
+
+
+# выбирает лучшее домино, чтобы сделать ход
+def best_move(pieces):
+    number_rank = [(str(domino_snake) + str(pieces)).count(str(n)) for n in range(7)]
+    domino_scores = {pieces.index(domino): number_rank[domino[0]] + number_rank[domino[1]] for domino in pieces}
+    while True:
+        if domino_scores:
+            best_domino = max(domino_scores, key=lambda key: domino_scores[key])
+            if make_a_move(best_domino + 1, pieces) == 'Illegal':
+                if make_a_move(-best_domino - 1, pieces) == 'Illegal':
+                    del domino_scores[best_domino]
+                    continue
+        else:
+            make_a_move(0, pieces)
+        break
 
 
 # делает один ход
@@ -117,8 +133,7 @@ while True:
         enter = input()
         while True:
             move = random.randint(-len(computer_pieces), len(computer_pieces))
-            if make_a_move(move, computer_pieces) == 'Illegal':
-                continue
+            best_move(computer_pieces)
             break
         status = 'player'
     if domino_snake[0][1] == domino_snake[-1][4] and "".join(domino_snake).count(domino_snake[0][1]) == 8:
