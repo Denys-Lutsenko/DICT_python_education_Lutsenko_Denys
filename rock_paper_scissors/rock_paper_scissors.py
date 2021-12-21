@@ -1,26 +1,51 @@
-'''rock_paper_scissors 3-st'''
+'''rock_paper_scissors 4-st'''
 from random import choice
-MOVES = {'scissors': 'rock', 'paper': 'scissors',
-            'rock': 'paper'}
+
+MOVES = ('rock', 'paper', 'scissors')
+WINNING_MOVES = {MOVES[i]: MOVES[(i + 1) % len(MOVES)]
+                 for i, _ in enumerate(MOVES)}
+
+
+def get_rating(username: str) -> int:
+    with open('rating.txt', mode='r', encoding='utf_8') as file:
+        for line in file:
+            name, score = line.strip().split(' ')
+            if name == username:
+                return int(score)
+    return 0
 
 
 def main():
+    username = input('Enter your name:')
+    print(f'Hello, {username}')
+    rating = get_rating(username)
+
     while True:
         user_move = input()
-        random_choice = choice(list(MOVES))
+
         if user_move == '!exit':
             print('Bye!')
             break
-        if user_move not in list(MOVES):
+        elif user_move == '!rating':
+            print(f'Your rating: {rating}')
+        elif user_move not in MOVES:
             print('Invalid input')
-            continue
-        if user_move == random_choice:
-            print(f'There is a draw ({random_choice})')
-        elif random_choice == MOVES[user_move]:
-            print(f'Sorry, but the computer chose {random_choice}')
         else:
-            print(f'Well done. The computer chose {random_choice} and failed')
+            computer_move = choice(MOVES)
+            if computer_move == user_move:
+                rating += 50
+                print(f'There is a draw {computer_move}')
+            elif computer_move == WINNING_MOVES[user_move]:
+                print(f'Sorry, but the computer chose {computer_move}')
+            else:
+                rating += 100
+                print(f'Well done. The computer chose {computer_move}',
+                      'and failed')
 
 
 if __name__ == '__main__':
     main()
+
+
+
+
