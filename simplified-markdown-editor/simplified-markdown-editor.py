@@ -164,7 +164,10 @@ class MarkdownFormatter:
             return True
         if command == '!done':
             output_string = ''.join(self.output)
-           
+            with open('output.md', 'w') as output_file:
+                output_file.write(output_string)
+            return False
+        raise ValueError('Unknown command!')
 
     def handle_formatter(self, formatter_key):
         formatter = self.format_callable_map.get(formatter_key)
