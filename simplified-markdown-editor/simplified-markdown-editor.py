@@ -88,6 +88,39 @@ class NewLineFormatter(BaseFormatter):
         return '\n'
 
 
+class BaseListFormatter(BaseFormatter):
+
+    def get_row_prefix(self, row_num):
+        raise NotImplemented('A List Formatter must implement get_row_prefix!')
+
+    @staticmethod
+    def get_input():
+        while True:
+            no_rows = int(input('Number of rows: '))
+            if int(no_rows) > 0:
+                break
+            print('The number of rows should be greater than zero')
+        rows = []
+        for i in range(no_rows):
+            rows.append(input(f'Row #{i + 1}: '))
+        return {'rows': rows}
+
+    def make_output(self, inputs):
+        rows = inputs.get('rows')
+        output = []
+        for index, row in enumerate(rows, start=1):
+            output.append(f'{self.get_row_prefix(index)} {row}')
+        return '\n'.join(output) + '\n'
+
+
+class OrderedListFormatter(BaseListFormatter):
+    def get_row_prefix(self, row_num):
+        return f'{row_num}.'
+
+
+class UnorderedListFormatter(BaseListFormatter):
+    def get_row_prefix(self, row_num):
+        return '*'
 
 
 class MarkdownFormatter:
@@ -108,6 +141,8 @@ class MarkdownFormatter:
         'bold': BoldFormatter(),
         'italic': ItalicFormatter(),
         'header': HeaderFormatter(),
+        'ordered-list': OrderedListFormatter(),
+        'unordered-list': UnorderedListFormatter(),
         'link': LinkFormatter(),
         'inline-code': InlineCodeFormatter(),
         'new-line': NewLineFormatter(),
@@ -129,7 +164,7 @@ class MarkdownFormatter:
             return True
         if command == '!done':
             output_string = ''.join(self.output)
-       
+           
 
     def handle_formatter(self, formatter_key):
         formatter = self.format_callable_map.get(formatter_key)
