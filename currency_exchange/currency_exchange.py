@@ -1,6 +1,8 @@
-rates = {"ARS": 0.82, "HNL": 0.17, "AUD": 1.9622, "MAD": 0.208}
+import requests
+import json
 
-wallet = float(input())
+r = requests.get(f"http://www.floatrates.com/daily/{input()}.json")
 
-for i in rates:
-    print(f"I will get {round(rates[i] * wallet, 2)} {i} from the sale of {wallet} conicoins.")
+dictionary = json.loads(r.text)
+print(dictionary['usd'])
+print(dictionary['eur'])
