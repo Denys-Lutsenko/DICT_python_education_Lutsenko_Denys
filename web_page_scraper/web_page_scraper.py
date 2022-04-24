@@ -1,80 +1,95 @@
-import string
+
 import requests
 from bs4 import BeautifulSoup
-
-
-def artic_title(artic_ln):
-    soup = BeautifulSoup(website(artic_ln).content, "html.parser")
-
-    raw_title = soup.find("h1", {"class": "c-article-magazine-title"}).text
-    table = raw_title.maketrans("", "", string.punctuation + "’")
-    title = raw_title.translate(table)
-    title = title.strip().replace(" ", "_")
-
-    return title
-
-
-def new_artic_ln(artic_ln):
-    site = website(artic_ln)
-    new_artic_ln = []
-
-    if site.status_code != 200:
-        return site.status_code, new_artic_ln
-
-    soup = BeautifulSoup(site.content, "html.parser")
-
-    all_artic = soup.find_all("article")
-    for artic in all_artic:
-        artic_span = artic.find("span", {"data-test": "article.type"})
-        artic_type = artic_span.find("span").text
-
-        if artic_type == "News":
-            main_ln = "https://www.nature.com"
-            artic_ln = artic.find("a", {"data-track-action": "view article"}).get("href")
-            complete_ln = main_ln + artic_ln
-            new_artic_ln.append(complete_ln)
-
-    return site.status_code, new_artic_ln
+import string
+import os
 
 
 def website(target):
     return requests.get(target, headers={'Accept-Language': 'en-US,en;q=0.5'})
 
 
+def art_ln(artic_ln, artic_type):
+    site = website(artic_ln)
+    articl_ln = []
 
-def ar_lecont(art_ln):
-    soup = BeautifulSoup(website(art_ln).content, "html.parser")
-    artic_content = soup.find("div", {"class": "c-article-body"}).get_text().strip()
+    if site.status_code != 200:
+        return site.status_code, articl_ln
 
-    return artic_content
+    soup = BeautifulSoup(site.content, "html.parser")
+
+    all_artic = soup.find_all("article")
+    for artic in all_artic:
+        curr_span = artic.find("span", {"data-test": "article.type"})
+        curr_type = curr_span.find("span").text
+
+        if curr_type == artic_type:
+            main_ln = "https://www.nature.com"
+            artic_ln = artic.find("a", {"data-track-action": "view article"}).get("href")
+            complete_ln = main_ln + artic_ln
+            articl_ln.append(complete_ln)
+
+    return site.status_code, articl_ln
 
 
-def artic(art_ln):
-    title = artic_title(art_ln)
-    artic_content = ar_lecont(art_ln)
+def artic_title(artic_ln):
+    soup = BeautifulSoup(website(artic_ln).content, "html.parser")
+
+    try:
+        raw_title = soup.find("h1", {"class": "c-article-magazine-title"}).text
+    except AttributeError:
+        raw_title = soup.find("h1", {"class": "article-item__title"}).text
+
+    table = raw_title.maketrans("", "", string.punctuation)
+    title = raw_title.translate(table)
+    title = title.strip().replace(" ", "_")
+
+    return title
+
+
+def artic_cont(artic_ln):
+    soup = BeautifulSoup(website(artic_ln).content, "html.parser")
+    try:
+        artic_cont = soup.find("div", {"class": "c-article-body"}).get_text().strip()
+    except AttributeError:
+        artic_cont = soup.find("div", {"class": "article-item__body"}).get_text().strip()
+    return artic_cont
+
+
+def save_artic(artic_ln, dir_path):
+    title = artic_title(artic_ln)
+    article_content = artic_cont(artic_ln)
 
     file_name = title + ".txt"
-    with open(file_name, "wb") as file:
-        content_in_byte = bytes(artic_content, "utf-8")
+    full_path = dir_path + "\\" + file_name
+    with open(full_path, "wb") as file:
+        content_in_byte = bytes(article_content, "utf-8")
         file.write(content_in_byte)
 
     return title
 
 
-url = "https://www.nature.com/nature/articles?sort=PubDate&year=2020&page=3"
+website_link = "https://www.nature.com/nature/articles"
+target_page = int(input("Enter page: "))
+target_type = input("Enter article type: ")
 
-website_code, art_ln = new_artic_ln(url)
+saved_article = []
+for i in range(target_page):
+    curr_page = str(i + 1)
+    url_in = website_link + "?page=" + curr_page
+    website_code, artic_ln = art_ln(url_in, target_type)
 
-if website_code == 200:
-    save_artic = []
+    folder_name = "Page_" + curr_page
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
 
-    for ln in art_ln:
-        save_title = artic(ln)
-        save_artic.append(save_title)
-        print("Article downloaded:", save_title)
+    if website_code == 200:
+        for link in artic_ln:
+            curr_path = os.getcwd() + "\\" + folder_name
+            saved_title = save_artic(link, curr_path)
+            saved_article.append(saved_title)
 
-    print("Downloaded article: ")
-    for i in range(len(save_artic)):
-        print(save_artic[i])
-else:
-    print("Invalid URL. Status code:", website_code)
+    else:
+        print("Invalid URL. Status code:", website_code)
+
+print("Saved all articles.")
