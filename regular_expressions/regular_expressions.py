@@ -12,4 +12,15 @@ def regex_recursion(regex, string):
         return regex_recursion(regex[1:], string[1:])
 
 
-print(regex_recursion(regex_string, input_string))
+def unequal_len_regex(regex, string):
+    found_match = regex_recursion(regex, string)
+
+    if found_match:
+        return True
+    elif string == "":
+        return False
+    else:
+        return unequal_len_regex(regex, string[1:])
+
+
+print(unequal_len_regex(regex_string, input_string))
