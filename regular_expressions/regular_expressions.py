@@ -23,7 +23,7 @@ def unequal_len_regex(regex, string):
         return unequal_len_regex(regex, string[1:])
 
 
-def regex_v3(regex: str, string):
+def regex_v3(regex, string):
     if regex.startswith("^"):
         regex = regex.replace("^", "")
         temp_regex = regex.replace("$", "")
@@ -40,4 +40,69 @@ def regex_v3(regex: str, string):
     return unequal_len_regex(regex, string)
 
 
-print(regex_v3(regex_string, input_string))
+def repetition(base_list, index, symbol, string_len):
+    possibility = []
+    if symbol in ["?", "*"]:
+        empty_index = base_list[:]
+        empty_index[index] = ""
+        possibility.append(empty_index)
+    if symbol in ["*", "+"]:
+        repeated_count = 2
+        current_len = len(base_list) + repeated_count - 1
+
+        offset = 0
+        if base_list[0] == "^":
+            offset += 1
+        if base_list[-1] == "$":
+            offset += 1
+
+        max_len = string_len + offset
+
+        while current_len <= max_len:
+            empty_index = base_list[:]
+            index_char = empty_index[index]
+            empty_index[index] = index_char * repeated_count
+            possibility.append(empty_index)
+            repeated_count += 1
+            current_len += 1
+    return possibility
+
+
+def regex_v4_helper(base_list, idx_map, max_len):
+    scenarios = [base_list]
+    for index, meta in idx_map.items():
+        current_scenarios = scenarios[:]
+        for item in current_scenarios:
+            extended_scenarios = repetition(item, index, meta, max_len)
+            scenarios.extend(extended_scenarios)
+
+    scenario_str = ["".join(scenario) for scenario in scenarios]
+
+    return scenario_str
+
+
+def regex_v4(regex, string):
+    meta_count = ["?", "*", "+"]
+    if all(char not in meta_count for char in regex):
+        return regex_v3(regex, string)
+
+    meta_dict = {}
+
+    for i in range(1, len(regex)):
+        if regex[i] in meta_count and regex[i - 1] != "\\":
+            offset = len(meta_dict)
+            meta_dict[i - 1 - offset] = regex[i]
+
+    base_chars = [char for char in regex if char not in meta_count]
+
+    scenarios = regex_v4_helper(base_chars, meta_dict, len(string))
+
+    for item in scenarios:
+        current_eval = regex_v3(item, string)
+        if current_eval is True:
+            return True
+
+    return False
+
+
+print(regex_v4(regex_string, input_string))
